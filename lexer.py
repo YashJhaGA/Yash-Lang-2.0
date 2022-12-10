@@ -82,6 +82,8 @@ def lex(line):
             tok.append(Token("QUOTE",i))
         elif(i.isdigit()):
             tok.append(Token("INTEGER", i))
+        elif(i == 'START' or i == 'END'):
+            tok.append(Token("STRUCT", i))
         elif(i == " "):
             pass
         elif(i[0].isdigit()):
@@ -117,7 +119,7 @@ def lex(line):
 # line = 'int y = 10 * 4 ; boolean x = 10 / y < 5 - 2 ;'
 #line = 'int x = 10 ; if ( 10 < 5 ) ; int g = 4 ; fi ;'
 
-line = 'int x ; if ( 5 < 10 ) ; x = 5 ; fi ;'
+line = 'START END A'
 
 tokenList = lex(line)
 print(tokenList)

@@ -22,6 +22,7 @@ class parser:
         self.listOfTokens = listOfTokens
         self.index = 0
         self.symbols = []
+        self.declareFlag = True
 
 
     def printTokens(self):
@@ -46,6 +47,17 @@ class parser:
             return "NONE"
 
     def startParse(self):
+
+        if(len(self.listOfTokens) <  2):
+            print("Error: Program must be at least 2 Tokens Long (Start,End) pair")
+
+        currentToken = self.listOfTokens[self.index]
+        if(currentToken.type == "STRUCT"):
+            if(currentToken.value == 'START'):
+                pass
+            else:
+                print("Error: Expected [STRUCT: START] token")
+        self.index += 1
         while(self.index < len(self.listOfTokens)):
             currentToken = self.listOfTokens[self.index]
             if(currentToken.type == 'DATATYPE'):
@@ -58,14 +70,32 @@ class parser:
                 else:
                     print("Cannot start with keyword: "+currentToken.value)
                     exit(1)
+            elif (currentToken.type == 'STRUCT'):
+                if (currentToken.value == "END"):
+                    self.endProgram()
+                else:
+                    print("Can't have two start tokens in program")
+                    exit(1)
             elif(currentToken.type == 'IDENTIFIER'):
                 self.startInitialize()
+            else:
+                print("Can't start line with Token: "+currentToken)
             self.index += 1
 
 
 
         print("Finished Parse")
         print(self.symbols)
+
+
+    def endProgram(self):
+        currentToken = self.getNextToken()
+        if(currentToken == 'NONE'):
+            return
+        else:
+            print("Error: END TOKEN should be LAST TOKEN IN PROGRAM")
+            exit(1)
+
 
     def validateIdentifier(self,currentToken):
         for i in currentToken.value:
@@ -95,11 +125,15 @@ class parser:
                 exit(1)
 
         varIdentifer = currentToken.value
+        if (any(y.variable == varIdentifer for y in self.symbols)):
+            print("Variable '"+varIdentifer+"' already exists.")
+            exit(1)
         currentToken = self.getNextToken()
 
         if(currentToken == 'NONE'):
             exit(1)
         elif(currentToken.type == 'SEMICOLON'):
+            self.declareFlag = True
             self.symbols.append(Variable(declareType, varIdentifer))
             return
         elif(currentToken.type == 'ASSIGN'):
@@ -121,6 +155,7 @@ class parser:
                 print("Missing tokens to initialize. Expected ASSIGN")
                 exit(1)
             elif(currentToken.type == 'ASSIGN'):
+                 self.declareFlag = False
                  self.initializePicker(dataType,varName)
             else:
                 print("Expected Token of Assign. Instead received "+currentToken.type)
@@ -203,9 +238,7 @@ class parser:
         if(expresionBalance != 1):
             print("Invalid Syntax for Integer Initialization.")
 
-        if (any(y.variable == varIdentifer for y in self.symbols)):
-            pass
-        else:
+        if(self.declareFlag):
             self.symbols.append(Variable("INTEGER", varIdentifer))
 
 
@@ -274,7 +307,8 @@ class parser:
         if(expresionBalance != 1):
             print("Invalid Syntax for Integer Initialization.")
 
-        self.symbols.append(Variable("REAL", varIdentifer))
+        if (self.declareFlag):
+            self.symbols.append(Variable("REAL", varIdentifer))
 
     def makeString(self, varIdentifer):
 
@@ -334,7 +368,8 @@ class parser:
 
 
             if(quoteBalance % 2 == 0):
-                self.symbols.append(Variable("STRING",varIdentifer))
+                if (self.declareFlag):
+                    self.symbols.append(Variable("STRING", varIdentifer))
             else:
                 print("Error in Syntax of initializing String")
 
@@ -357,7 +392,8 @@ class parser:
         elif(currentToken.type == 'INTEGER' or currentToken.type == 'REAL' or currentToken.type == 'IDENTIFIER'):
             result = self.isBooleanExpression()
             if(result):
-                self.symbols.append(Variable("BOOLEAN", varIdentifer))
+                if (self.declareFlag):
+                    self.symbols.append(Variable("BOOLEAN", varIdentifer))
             else:
                 print("Invalid Syntax for initalizing boolean expression ")
                 exit(1)
@@ -486,7 +522,77 @@ class parser:
         else:
             print("Expected Semicolon. Instead received: "+currentToken.value)
 
+    def startWhileLoop(self):
+        currentToken = self.getNextToken()
+        if (currentToken == 'NONE'):
+            print("Missing tokens necessary to complete if statement")
+            exit(1)
+        elif (currentToken.value == 'START_PARAM'):
+            pass
+        else:
+            print("Expected symbol of '('. Instead received: " + currentToken.type + ": " + currentToken.value)
+            exit(1)
 
+        currentToken = self.getNextToken()
+
+        if (currentToken == 'NONE'):
+            print("Missing Tokens. Expected boolean expression")
+            exit(1)
+        elif (currentToken.type == 'INTEGER' or currentToken.type == 'REAL' or currentToken.type == 'IDENTIFIER'):
+            result = self.isIfBooleanExpression()
+            if (result):
+                currentToken = self.getNextToken()
+                if (currentToken == 'NONE'):
+                    print("Missing semicolon to complete initialization of if statement")
+                    exit(1)
+                elif (currentToken.type == 'SEMICOLON'):
+                    pass
+                else:
+                    print("Expected Token of 'Semicolon'. Instead received: " + currentToken.type)
+                    exit(1)
+            else:
+                print("Invalid Boolean Expression")
+                exit(1)
+        else:
+            print("Expected Token of Numerical Value or Identifer. Instead received: " + currentToken.type)
+
+        self.whileStmtBody()
+
+        currentToken = self.getNextToken()
+        if (currentToken == 'NONE'):
+            print("Missing Token. Expected Semicolon")
+            exit(1)
+        elif (currentToken.type == 'SEMICOLON'):
+            return
+        else:
+            print("Expected Semicolon. Instead received: " + currentToken.value)
+
+    def whileStmtBody(self):
+        currentToken = self.getNextToken()
+        if(currentToken == 'NONE'):
+            print("Missing tokens for if statement")
+            exit(1)
+        while(currentToken.value != 'END_WHILE'):
+            if (currentToken.type == 'DATATYPE'):
+                self.declaration(currentToken)
+            elif (currentToken.type == 'KEYWORD'):
+                if (currentToken.value == 'IF_STMT'):
+                    self.startIfStmt()
+                elif (currentToken.value == 'WHILE'):
+                    self.startWhileLoop()
+                else:
+                    print("Cannot start with keyword: " + currentToken.value)
+                    exit(1)
+            elif(currentToken.type == 'IDENTIFIER'):
+                self.startInitialize()
+            else:
+                print("Invalid Initial Token for Line")
+                exit(1)
+
+            currentToken = self.getNextToken()
+            if(currentToken == 'NONE'):
+                print("Missing tokens for if statement")
+                exit(1)
 
 
 
@@ -591,4 +697,6 @@ class parser:
             return True
         else:
             return False
+
+
 
