@@ -1,0 +1,6 @@
+START
+int a = 5 ;
+if ( a < 10 ) ;
+int b = 10 ;
+fi ;
+END

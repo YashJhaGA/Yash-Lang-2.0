@@ -57,58 +57,60 @@ class Token:
 
 
 
-def lex(line):
+def lex(file):
     tok = []
-    lineSplit = line.split(" ")
-    print(lineSplit)
-    for i in lineSplit:
-        if(i in operators):
-            tok.append(Token("OPERATOR",operators[i]))
-        elif(i in dataTypes):
-            tok.append(Token("DATATYPE",dataTypes[i]))
-        elif(i in comparisons):
-            tok.append(Token("COMPARISON",comparisons[i]))
-        elif(i in boolResult):
-            tok.append(Token("BOOLRESULT",boolResult[i]))
-        elif(i in keywords):
-            tok.append(Token("KEYWORD",keywords[i]))
-        elif(i in parameters):
-            tok.append(Token("PARAMETER",parameters[i]))
-        elif(i == ";"):
-            tok.append(Token("SEMICOLON",i))
-        elif(i == "="):
-            tok.append(Token("ASSIGN",i))
-        elif(i == "\""):
-            tok.append(Token("QUOTE",i))
-        elif(i.isdigit()):
-            tok.append(Token("INTEGER", i))
-        elif(i == 'START' or i == 'END'):
-            tok.append(Token("STRUCT", i))
-        elif(i == " "):
-            pass
-        elif(i[0].isdigit()):
-            dot = i.count(".")
-            num = True
-            for j in i:
-                if(j in DIGITS):
-                    continue
-                elif(j in LETTERS or j in SYMBOLS):
-                    num = False
+    lineList = f.read().splitlines()
+    for line in lineList:
+        lineSplit = line.split(" ")
+        #print(lineSplit)
+        for i in lineSplit:
+            if(i in operators):
+                tok.append(Token("OPERATOR",operators[i]))
+            elif(i in dataTypes):
+                tok.append(Token("DATATYPE",dataTypes[i]))
+            elif(i in comparisons):
+                tok.append(Token("COMPARISON",comparisons[i]))
+            elif(i in boolResult):
+                tok.append(Token("BOOLRESULT",boolResult[i]))
+            elif(i in keywords):
+                tok.append(Token("KEYWORD",keywords[i]))
+            elif(i in parameters):
+                tok.append(Token("PARAMETER",parameters[i]))
+            elif(i == ";"):
+                tok.append(Token("SEMICOLON",i))
+            elif(i == "="):
+                tok.append(Token("ASSIGN",i))
+            elif(i == "\""):
+                tok.append(Token("QUOTE",i))
+            elif(i.isdigit()):
+                tok.append(Token("INTEGER", i))
+            elif(i == 'START' or i == 'END'):
+                tok.append(Token("STRUCT", i))
+            elif(i == " "):
+                pass
+            elif(i[0].isdigit()):
+                dot = i.count(".")
+                num = True
+                for j in i:
+                    if(j in DIGITS):
+                        continue
+                    elif(j in LETTERS or j in SYMBOLS):
+                        num = False
+                    else:
+                        print(j + " is an invalid token")
+                        exit(1)
+
+                if(dot > 0 and num == True):
+                    tok.append(Token("REAL", i))
                 else:
-                    print(j + " is an invalid token")
-                    exit(1)
-
-            if(dot > 0 and num == True):
-                tok.append(Token("REAL", i))
+                    tok.append(Token("IDENTIFIER",i))
             else:
-                tok.append(Token("IDENTIFIER",i))
-        else:
-            for j in i:
-                if j not in DIGITS and j not in LETTERS and j not in SYMBOLS:
-                    print(j + " is an invalid token")
-                    exit(1)
+                for j in i:
+                    if j not in DIGITS and j not in LETTERS and j not in SYMBOLS:
+                        print(j + " is an invalid token")
+                        exit(1)
 
-            tok.append(Token("IDENTIFIER",i))
+                tok.append(Token("IDENTIFIER",i))
 
 
     return tok
@@ -118,10 +120,14 @@ def lex(line):
 
 # line = 'int y = 10 * 4 ; boolean x = 10 / y < 5 - 2 ;'
 #line = 'int x = 10 ; if ( 10 < 5 ) ; int g = 4 ; fi ;'
+f = ""
+try:
+    f = open("workingTest.txt","r")
+except:
+    print("Unable to open file")
+    exit(1)
 
-line = 'START END A'
-
-tokenList = lex(line)
+tokenList = lex(f)
 print(tokenList)
 p = parser(tokenList)
 p.startParse()

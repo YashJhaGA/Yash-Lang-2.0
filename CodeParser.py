@@ -3,18 +3,19 @@ class Token:
         self.type = _type
         self.value = value
 
-    # representation method to return a string with the token's value and type
     def __repr__(self) -> str:
         return f"{self.type}:{self.value}"
 
 
 class Variable:
-    def __init__(self, dataType, variable):
+    def __init__(self, dataType, variable,scope):
         self.type = dataType
         self.variable = variable
+        self.scope = scope
 
     def __repr__(self) -> str:
-        return f"{self.type}:{self.variable}"
+        return f"{self.type} {self.variable}-Scope:{self.scope}"
+
 
 class parser:
 
@@ -23,7 +24,7 @@ class parser:
         self.index = 0
         self.symbols = []
         self.declareFlag = True
-
+        self.scope = "Global"
 
     def printTokens(self):
         print(self.listOfTokens)
@@ -81,6 +82,7 @@ class parser:
             else:
                 print("Can't start line with Token: "+currentToken)
             self.index += 1
+            self.scope = "Global"
 
 
 
@@ -134,7 +136,7 @@ class parser:
             exit(1)
         elif(currentToken.type == 'SEMICOLON'):
             self.declareFlag = True
-            self.symbols.append(Variable(declareType, varIdentifer))
+            self.symbols.append(Variable(declareType, varIdentifer,self.scope))
             return
         elif(currentToken.type == 'ASSIGN'):
             self.initializePicker(declareType,varIdentifer)
@@ -239,7 +241,7 @@ class parser:
             print("Invalid Syntax for Integer Initialization.")
 
         if(self.declareFlag):
-            self.symbols.append(Variable("INTEGER", varIdentifer))
+            self.symbols.append(Variable("INTEGER", varIdentifer,self.scope))
 
 
     def makeReal(self,varIdentifer):
@@ -308,7 +310,7 @@ class parser:
             print("Invalid Syntax for Integer Initialization.")
 
         if (self.declareFlag):
-            self.symbols.append(Variable("REAL", varIdentifer))
+            self.symbols.append(Variable("REAL", varIdentifer,self.scope))
 
     def makeString(self, varIdentifer):
 
@@ -369,7 +371,7 @@ class parser:
 
             if(quoteBalance % 2 == 0):
                 if (self.declareFlag):
-                    self.symbols.append(Variable("STRING", varIdentifer))
+                    self.symbols.append(Variable("STRING", varIdentifer,self.scope))
             else:
                 print("Error in Syntax of initializing String")
 
@@ -393,7 +395,7 @@ class parser:
             result = self.isBooleanExpression()
             if(result):
                 if (self.declareFlag):
-                    self.symbols.append(Variable("BOOLEAN", varIdentifer))
+                    self.symbols.append(Variable("BOOLEAN", varIdentifer,self.scope))
             else:
                 print("Invalid Syntax for initalizing boolean expression ")
                 exit(1)
@@ -476,6 +478,7 @@ class parser:
 
 
     def startIfStmt(self):
+        self.scope = "Local"
         currentToken = self.getNextToken()
         if(currentToken == 'NONE'):
             print("Missing tokens necessary to complete if statement")
@@ -523,6 +526,7 @@ class parser:
             print("Expected Semicolon. Instead received: "+currentToken.value)
 
     def startWhileLoop(self):
+        self.scope = "Local"
         currentToken = self.getNextToken()
         if (currentToken == 'NONE'):
             print("Missing tokens necessary to complete if statement")
