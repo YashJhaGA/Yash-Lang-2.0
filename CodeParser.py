@@ -165,7 +165,7 @@ class parser:
             print("Cannot initialize undeclared variable")
 
     def initializePicker(self,declareType, varIdentifier):
-        if(declareType == 'INT'):
+        if(declareType == 'INT' or declareType == 'INTEGER'):
             self.makeInt(varIdentifier)
         elif(declareType == 'STRING'):
             self.makeString(varIdentifier)
@@ -408,6 +408,7 @@ class parser:
         currentToken = self.getCurrentToken()
         expressionBalance = 0
         while(currentToken.type != 'COMPARISON'):
+            print(currentToken)
             if(currentToken.type == 'INTEGER' or currentToken.type == 'REAL'):
                 expressionBalance += 1
             elif(currentToken.type == 'IDENTIFIER'):
@@ -419,6 +420,7 @@ class parser:
                 expressionBalance -= 1
 
             else:
+                print(currentToken)
                 print("Invalid Token used for boolean syntax")
                 exit(1)
 
