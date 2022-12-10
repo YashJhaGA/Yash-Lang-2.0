@@ -41,8 +41,8 @@ START
 int a = 5 ;
 int b = 0 ;
 while ( a < 5 ) ;
-b = b + a
-a = a + 1
+b = b + a ;
+a = a + 1 ;
 elihw ;
 END
 ```
@@ -55,7 +55,7 @@ START
 int a = 10 ;
 int b ;
 if ( a < 20 ) ;
-b = 5
+b = 5 ;
 fi ;
 END
 ```
