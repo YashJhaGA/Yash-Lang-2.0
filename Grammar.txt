@@ -1,0 +1,29 @@
+<Program> -> START <stmt_list>
+<stmt_list> -> <stmt> <stmt_list> | END
+
+<stmt> -> <declaration> | if<if_stmt> | while<while_stmt> | identifier <initialization> 
+
+<declaration> -> int <int_decl> | real <real_decl> | String <String_decl> | boolean <boolean_decl> 
+
+<int_decl> ->  id ; | id = <expr>
+<real_decl> - > id ; | id = <expr>
+<String_decl> ->  id ; id = <StringExpr>
+<boolean_decl> - > id ; id = <boolExpr>
+
+<expr> -> <term> + <term> |  <term> - <term>
+<term> -> <factor> * <factor> | <factor> / <factor>
+<factor> -> id | num
+
+<StringExpr> ->  “ <text> “ ;
+<text> - > list of characters | list of characters “ + “ <text>
+
+<boolExpr>  -> <expr> <compare> <expr> ;
+<compare> -> < | > | <= | >= | != | ==
+
+<if_stmt> -> ( <boolExpr> ) ; <if_block>
+<if_block> -> <stmt> <if_block> | fi ;
+
+<while_stmt> -> ( <boolExpr> ) ; <while_block>
+<while_block> -> <stmt> <while_block> | elihw ;
+
+<initialization> -> = <expr> | = <StringExpr> | <boolExpr>
